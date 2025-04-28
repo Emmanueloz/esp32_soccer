@@ -40,10 +40,10 @@ struct MotorPins
 };
 
 std::vector<MotorPins> motorPins = {
-    {16, 17}, // Wheels.FRONT_RIGHT
-    {18, 19}, // Wheels.BACK_RIGHT
-    {27, 26}, // Wheels.FRONT_LEFT
-    {25, 33}, // Wheels.BACK_LEFT
+    {19, 21}, // Wheels.FRONT_RIGHT
+    {13, 12}, // Wheels.BACK_RIGHT
+    {5, 18},  // Wheels.FRONT_LEFT
+    {32, 33}, // Wheels.BACK_LEFT
 };
 
 // Motor A (Left)
@@ -308,12 +308,12 @@ void setup()
     )rawliteral"); });
 
   // === API Routes ===
-  server.on("/forward", []()
+  server.on("/up", []()
             {
     processCarMovement(UP);
     server.send(200, "application/json", "{\"action\":\"forward\"}"); });
 
-  server.on("/backward", []()
+  server.on("/down", []()
             {
     processCarMovement(DOWN);
     server.send(200, "application/json", "{\"action\":\"backward\"}"); });
