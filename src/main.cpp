@@ -209,102 +209,273 @@ void setup()
   // Home page (with control buttons)
   server.on("/", []()
             { server.send(200, "text/html", R"rawliteral(
-      <!DOCTYPE html>
-      <html lang="en">
+    <!DOCTYPE html>
+      <html lang="es">
       <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Robot Soccer Control</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Control de Robot - Modo Horizontal</title>
         <style>
+          * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+          }
+
           body {
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f8;
+            height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            overflow: hidden;
           }
-          h1 {
-            color: #6b1878;
-            margin-bottom: 10px;
-          }
-          .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 80px);
-            grid-gap: 10px;
-            justify-content: center;
-            align-items: center;
-          }
-          .btn {
-            width: 80px;
-            height: 80px;
-            font-size: 24px;
-            border: none;
-            border-radius: 20px;
+
+          .header {
+            width: 100%;
             background-color: #6b1878;
             color: white;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            text-align: center;
+            padding: 5px;
           }
-          .btn:hover {
-            background-color: #9e3aad;
+
+          h1 {
+            margin: 0;
+            font-size: 20px;
           }
-          .special-buttons {
-            margin-top: 20px;
+
+          .controls-wrapper {
+            display: flex;
+            flex: 1;
+            width: 100%;
+          }
+
+          /* Controles izquierda */
+          .left-controls {
+            flex: 1;
             display: flex;
             justify-content: center;
-            gap: 20px;
+            align-items: center;
+            padding: 10px;
           }
-          .turn-btn {
-            width: 100px;
-            height: 50px;
-            font-size: 20px;
-            background-color: #5c5c8a;
-            border: none;
-            border-radius: 10px;
+
+          /* Controles derecha */
+          .right-controls {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+          }
+
+          /* D-pad izquierdo */
+          .left-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 200px;
+          }
+
+          /* Botones de acción derecha */
+          .right-pad {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 200px;
+          }
+
+          .dir-btn {
+            height: 60px;
+            background-color: #6b1878;
             color: white;
-            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
-          .turn-btn:hover {
+
+          .dir-btn:active {
+           background-color: #9e3aad;
+            transform: scale(0.95);
+          }
+
+          .turn-btn {
+            height: 80px;
+            background-color: #5c5c8a;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .turn-btn:active {
             background-color: #7b7bb2;
+            transform: scale(0.95);
           }
-        </style>
-        <script>
-        function sendCommand(cmd) {
-          fetch("/" + cmd)
-            .then(response => console.log("Sent:", cmd))
-            .catch(error => console.error("Error sending", cmd));
-          if (navigator.vibrate) {
-            navigator.vibrate(100);
+
+          .stop-btn {
+            height: 80px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
-        }
-      </script>
-      </head>
-      <body>
-        <h1>Robot Soccer Control</h1>
-        <div class="grid-container">
-          <button class="btn" onclick="sendCommand('up_left')">↖</button>
-          <button class="btn" onclick="sendCommand('up')">↑</button>
-          <button class="btn" onclick="sendCommand('up_right')">↗</button>
-  
-          <button class="btn" onclick="sendCommand('left')">←</button>
-          <button class="btn" onclick="sendCommand('stop')">🛑</button>
-          <button class="btn" onclick="sendCommand('right')">→</button>
-  
-          <button class="btn" onclick="sendCommand('down_left')">↙</button>
-          <button class="btn" onclick="sendCommand('down')">↓</button>
-          <button class="btn" onclick="sendCommand('down_right')">↘</button>
+
+          .stop-btn:active {
+            background-color: #c0392b;
+            transform: scale(0.95);
+          }
+
+          .empty {
+            background-color: transparent;
+          }
+
+          /* Indicador de estado */
+          .status-bar {
+            width: 100%;
+            padding: 5px;
+            background-color: #ddd;
+            text-align: center;
+            font-weight: bold;
+          }
+
+          @media (orientation: portrait) {
+            /* Mensaje si el dispositivo está en vertical */
+            body::before {
+              content: "Por favor, gira tu dispositivo para modo horizontal";
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-color: rgba(0, 0, 0, 0.8);
+              color: white;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              padding: 20px;
+              font-size: 20px;
+              z-index: 1000;
+            }
+          }
+      </style>
+    </head>
+    <body>
+      <header class="header">
+        <h1>Control de Robot</h1>
+      </header>
+
+      <div class="controls-wrapper">
+      <!-- Control izquierdo: D-pad de movimiento -->
+      <div class="left-controls">
+        <div class="left-pad">
+        <button class="dir-btn" ontouchstart="sendCommand('up_left')" onmousedown="sendCommand('up_left')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">↖</button>
+        <button class="dir-btn" ontouchstart="sendCommand('up')" onmousedown="sendCommand('up')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">↑</button>
+        <button class="dir-btn" ontouchstart="sendCommand('up_right')" onmousedown="sendCommand('up_right')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">↗</button>
+        
+        <button class="dir-btn" ontouchstart="sendCommand('left')" onmousedown="sendCommand('left')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">←</button>
+        <button class="dir-btn empty"></button>
+        <button class="dir-btn" ontouchstart="sendCommand('right')" onmousedown="sendCommand('right')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">→</button>
+        
+        <button class="dir-btn" ontouchstart="sendCommand('down_left')" onmousedown="sendCommand('down_left')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">↙</button>
+        <button class="dir-btn" ontouchstart="sendCommand('down')" onmousedown="sendCommand('down')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">↓</button>
+        <button class="dir-btn" ontouchstart="sendCommand('down_right')" onmousedown="sendCommand('down_right')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">↘</button>
         </div>
-  
-        <div class="special-buttons">
-          <button class="turn-btn" onclick="sendCommand('turn_left')">⟲ Turn Left</button>
-          <button class="turn-btn" onclick="sendCommand('turn_right')">⟳ Turn Right</button>
+      </div>
+
+      <!-- Control derecho: Botones de giro y parada -->
+      <div class="right-controls">
+      <div class="right-pad">
+        <button class="turn-btn" ontouchstart="sendCommand('turn_left')" onmousedown="sendCommand('turn_left')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">
+          ⟲ GIRAR IZQUIERDA
+        </button>
+        <button class="turn-btn" ontouchstart="sendCommand('turn_right')" onmousedown="sendCommand('turn_right')" ontouchend="sendCommand('stop')" onmouseup="sendCommand('stop')">
+          ⟳ GIRAR DERECHA
+        </button>
+        <button class="stop-btn" ontouchstart="sendCommand('stop')" onmousedown="sendCommand('stop')">
+          🛑 PARAR
+        </button>
         </div>
-      </body>
-      </html>
+      </div>
+    </div>
+
+    <footer class="status-bar" id="status">Listo</footer>
+
+    <script>
+    // Elemento de estado
+    const statusElement = document.getElementById('status');
+    
+    // Función para enviar comandos
+    function sendCommand(cmd) {
+      fetch("/" + cmd)
+        .then(response => {
+          console.log("Enviado:", cmd);
+          updateStatus(cmd);
+        })
+        .catch(error => {
+          console.error("Error enviando", cmd);
+          statusElement.textContent = "Error al enviar comando";
+        });
+      
+      // Vibración táctil
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }
+    
+    // Actualizar el indicador de estado
+    function updateStatus(cmd) {
+      const commandText = {
+        'up': 'Adelante',
+        'down': 'Atrás',
+        'left': 'Izquierda',
+        'right': 'Derecha',
+        'up_left': 'Adelante-Izquierda',
+        'up_right': 'Adelante-Derecha',
+        'down_left': 'Atrás-Izquierda',
+        'down_right': 'Atrás-Derecha',
+        'turn_left': 'Girando Izquierda',
+        'turn_right': 'Girando Derecha',
+        'stop': 'Detenido'
+      };
+      
+      statusElement.textContent = commandText[cmd] || cmd;
+    }
+    
+    // Evitar comportamientos no deseados en dispositivos móviles
+    document.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+    
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+    
+    // Comprobar orientación al cargar
+    window.addEventListener('load', function() {
+      if (window.orientation === 0 || window.orientation === 180) {
+        // Está en vertical, mostrar mensaje
+        alert("Por favor, gira tu dispositivo para modo horizontal");
+      }
+    });
+  </script>
+</body>
+</html>
     )rawliteral"); });
 
   // === API Routes ===
