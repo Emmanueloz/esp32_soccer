@@ -57,8 +57,8 @@ const int IN4 = 21;
 WebServer server(80);
 
 // WiFi Access Point
-const char *ssid = "RobotSoccer";
-const char *password = "12345678";
+const char *ssid = "RobotSoccerForward";
+const char *password = "robotSF2024";
 
 // === Motor Control Functions ===
 
@@ -202,6 +202,7 @@ void setup()
 
   setupMotorPins();
   // Access Point
+  WiFi.mode(WIFI_AP);
   WiFi.softAP(ssid, password);
   Serial.print("AP IP: ");
   Serial.println(WiFi.softAPIP());
